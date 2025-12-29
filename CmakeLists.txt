@@ -1,0 +1,51 @@
+cmake_minimum_required(VERSION 3.15)
+project(crow_api LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Dependencias necessarias para a aplicação funcionar.
+find_package(Crow CONFIG REQUIRED)
+find_package(SQLite3 REQUIRED)
+
+include(FetchContent)
+
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.2
+)
+
+FetchContent_MakeAvailable(json)
+
+
+# Variavel para armazenar todos os arquivos .cpp no Projeto
+file(GLOB_RECURSE PROJECT_SOURCES
+    src/*.cpp
+)
+
+# Listando todos os arquivos .cpp do projeto
+message(STATUS "Arquivos encontrados:")
+foreach(file ${PROJECT_SOURCES})
+    message(STATUS " - ${file}")
+endforeach()
+
+# Adicionando todos os arquivos .cpp no executavel.
+add_executable(crow_api
+    ${PROJECT_SOURCES}
+)
+
+# Obrigando a leitura de todos os arquivos .h
+target_include_directories(crow_api
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+)
+
+# Linkando as bibliotecas/depêndencias necessarias do projeto ao executavel
+target_link_libraries(crow_api
+    PRIVATE
+        Crow::Crow
+        SQLite::SQLite3
+)
+
+target_link_libraries(crow_api PRIVATE nlohmann_json::nlohmann_json)

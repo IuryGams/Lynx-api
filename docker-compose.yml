@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  sqlite:
+    build: ./docker/sqlite
+    container_name: lynx_sqlite
+    volumes:
+      - ./data:/db
+      - ./docker/sqlite/init.sql:/docker-entrypoint-init.sql
+    command: >
+      sh -c "sqlite3 /db/lynx.db < /docker-entrypoint-init.sql && tail -f /dev/null"

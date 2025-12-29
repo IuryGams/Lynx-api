@@ -1,0 +1,8 @@
+{
+    "name": "lynx-api",
+    "version": "1.0.0",
+    "dependencies": [
+        "crow",
+        "sqlite3"
+    ]
+}

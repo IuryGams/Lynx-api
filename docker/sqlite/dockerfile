@@ -1,0 +1,8 @@
+# docker/sqlite/Dockerfile
+FROM alpine:latest
+
+RUN apk add --no-cache sqlite
+
+WORKDIR /db
+
+CMD ["sqlite3", "/db/lynx.db"]

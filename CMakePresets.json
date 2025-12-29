@@ -1,0 +1,31 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "crow_api",
+            "displayName": "VS 2019 + vcpkg (x64)",
+            "generator": "Visual Studio 16 2019",
+            "architecture": {
+                "value": "x64"
+            },
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-windows",
+                "CMAKE_CXX_STANDARD": "20"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "configurePreset": "crow_api",
+            "configuration": "Debug"
+        },
+        {
+            "name": "release",
+            "configurePreset": "crow_api",
+            "configuration": "Release"
+        }
+    ]
+}
