@@ -1,5 +1,4 @@
 /* Controllers */
-
 #include "controllers/customer_controller.h"
 #include "controllers/order_controller.h"
 #include "controllers/payment_controller.h"
@@ -33,7 +32,7 @@ int main()
         config.threads = 4;
         config.log_level = "debug";
         config.cors = true;
-        config.cors_origin = "*";
+        config.cors_origin = "https://iurygams.github.io/Lynx-frontend";
 
         auto server = std::make_unique<server::Server>(config);
 

@@ -1,6 +1,5 @@
 #include "controllers/customer_controller.h"
-#include "errors/handle_error.h"
-#include "middleware/validate_body.h"
+#include "errors/http_handle_error.h"
 #include "utils/enums.h"
 #include "utils/time/time_utils.h"
 #include <iostream>

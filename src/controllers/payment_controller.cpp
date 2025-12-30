@@ -1,6 +1,5 @@
 #include "controllers/payment_controller.h"
 #include "errors/handle_error.h"
-#include "middleware/validate_body.h"
 #include "utils/convert.h"
 #include "utils/enums.h"
 #include "utils/time/time_utils.h"

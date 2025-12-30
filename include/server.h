@@ -5,8 +5,6 @@
 namespace lynx::server
 {
 
-using App = crow::App<crow::CORSHandler>;
-
 struct ServerConfig
 {
     int port = 8080;
