@@ -1,6 +1,6 @@
 # Lynx API — Banco de Dados SQLite com Docker
 
-Este projeto utiliza **SQLite** rodando dentro de um **container Docker** para padronizar o ambiente de desenvolvimento, facilitar testes e versionar o schema do banco de dados.
+Este projeto utiliza **SQLite** rodando dentro de um **container Docker** para padronizar o ambiente de desenvolvimento, facilitar testes e versionar o schema do banco de dados. A API é desenvolvida em **C++** usando o **Crow**.
 
 > ⚠️ SQLite não é um servidor. O Docker é usado apenas para gerenciar o arquivo `.db` e executar scripts de inicialização.
 
@@ -8,43 +8,62 @@ Este projeto utiliza **SQLite** rodando dentro de um **container Docker** para p
 
 ## 📦 Pré-requisitos
 
-- Docker Desktop instalado e em execução
-- Docker Compose habilitado
-- PowerShell ou terminal compatível
+Antes de rodar o projeto, você precisa ter instalado e configurado o seguinte:
+
+1. **PowerShell 5+** ou outro terminal compatível.
+2. **CMake 3.25+** (para configurar e buildar o projeto).
+3. **Visual Studio 2019 ou superior** (com suporte a C++ e build tools).
+4. **vcpkg** para gerenciar dependências C++:
+   - Clone o repositório do vcpkg: `git clone https://github.com/microsoft/vcpkg.git`
+   - Vá para a pasta do vcpkg: `cd vcpkg`
+   - Compile o vcpkg: `.ootstrap-vcpkg.bat`
+   - Adicione o vcpkg ao PATH do usuário ou use `CMAKE_TOOLCHAIN_FILE` no preset.
+5. **Docker Desktop** (com Docker Compose habilitado) para rodar o SQLite.
+
+> Certifique-se de que o Docker e o vcpkg estejam acessíveis pelo PATH.
 
 ---
 
-## 🚀 Subindo o banco de dados
+## 🚀 Rodando o projeto
 
-### 1️⃣ Construir e iniciar o container
+### 1️⃣ Subir o banco de dados no Docker
 
-```bash
+1. Abra o terminal na pasta do projeto.
+2. Suba o container com o banco de dados e execute o script `init.sql`:
+
+```powershell
 docker compose up -d --build
 ```
 
-O que esse comando faz:
+3. Verifique se o container está rodando:
 
-* Cria a imagem Docker do SQLite
-* Executa o script init.sql
-* Cria o arquivo lynx.db
-* Mantém o container rodando em background (-d)
-
-
-```bash
+```powershell
 docker ps
 ```
 
-O que esse comando faz:
+4. Para acessar o banco SQLite dentro do container:
 
-* Lista os containers em execução
-* Confirma se o container lynx_sqlite está ativo
-
-
-```bash
+```powershell
 docker exec -it lynx_sqlite sqlite3 /db/lynx.db
+sqlite> .tables
+sqlite> SELECT * FROM customers;
 ```
 
-O que esse comando faz:
+> O Docker cria o arquivo `lynx.db` e mantém o container rodando em background.
 
-* Abre um terminal interativo dentro do container
-* Conecta diretamente ao banco lynx.db
+### 2️⃣ Rodar o projeto com build.ps1
+
+Depois de instalar os pré-requisitos e subir o Docker, você pode rodar o projeto com o script `build.ps1`:
+
+```powershell
+# Abra o PowerShell na pasta do projeto
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process  # permite execução de scripts temporariamente
+.\build.ps1 -Config Debug  # ou Release
+```
+
+O script vai automaticamente:
+1. Configurar o projeto com CMake usando o preset `crow_api`.
+2. Buildar o projeto no modo Debug ou Release.
+3. Executar o executável da API.
+
+> A API estará disponível em **http://localhost:8000** e o SQLite estará rodando no container Docker.
