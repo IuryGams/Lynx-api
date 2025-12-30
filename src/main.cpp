@@ -32,7 +32,7 @@ int main()
         config.threads = 4;
         config.log_level = "debug";
         config.cors = true;
-        config.cors_origin = "https://iurygams.github.io/Lynx-frontend";
+        config.cors_origin = "*";
 
         auto server = std::make_unique<server::Server>(config);
 
