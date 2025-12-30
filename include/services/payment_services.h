@@ -5,7 +5,6 @@
 #include "services/order_services.h"
 #include <memory>
 
-
 namespace lynx::services
 {
 
@@ -15,7 +14,7 @@ private:
     std::shared_ptr<repository::interface::IPaymentRepository> repository_;
     std::shared_ptr<OrderServices> order_service_; // Para validar pedidos e total
 
-    auto validate_payment(const models::Payment &payment) -> void;
+    auto validate_payment(const models::Payment &payment, int total_order_cents, int total_already_paid) -> void;
 
     auto to_response_dto(const models::Payment &payment) -> models::dto::PaymentResponseDTO;
 

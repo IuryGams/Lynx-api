@@ -21,6 +21,7 @@ struct PaymentResponseDTO
     int order_id;
     PaymentMethod method;
     int amount_cents;
-    std::chrono::system_clock::time_point paid_at;
+    std::optional<std::chrono::system_clock::time_point> paid_at;
+    std::optional<int> still_missing;
 };
 } // namespace lynx::models::dto

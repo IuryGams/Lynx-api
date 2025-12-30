@@ -17,59 +17,65 @@ auto PaymentServices::to_response_dto(const models::Payment &payment) -> models:
     return models::dto::PaymentResponseDTO{payment.id, payment.order_id, payment.method, payment.amount_cents, payment.paid_at};
 }
 
-auto PaymentServices::validate_payment(const models::Payment &payment) -> void
+auto PaymentServices::validate_payment(const models::Payment &payment, int total_order_cents, int total_already_paid) -> void
 {
-    auto order = order_service_->get_order_by_id(payment.order_id);
-
-    int total_order_cents = 0;
-
-    for (const auto &item : order.items)
-    {
-        total_order_cents += item.quantity * item.unit_price_cents;
-    }
-
     if (payment.amount_cents <= 0)
     {
         throw exceptions::BadRequestError("Payment amount must be positive");
-    }
-
-    if (payment.amount_cents > total_order_cents)
-    {
-        throw exceptions::BadRequestError("Payment amount exceeds order total");
     }
 
     if (payment.method == models::PaymentMethod::UNKNOWN)
     {
         throw exceptions::BadRequestError("Invalid payment method");
     }
+
+    int remaining = total_order_cents - total_already_paid;
+
+    if (remaining <= 0)
+    {
+        throw exceptions::BadRequestError("This order is already fully paid");
+    }
+
+    if (payment.amount_cents > remaining)
+    {
+        auto message = "Payment amount exceeds order total. Remaining: " + std::to_string(remaining) + " cents";
+        throw exceptions::BadRequestError(message);
+    }
 }
 
 auto PaymentServices::create_payment(const models::dto::PaymentCreateDTO &dto) -> models::dto::PaymentResponseDTO
 {
+    // 1. Centraliza busca de dados (Evita múltiplas chamadas ao DB)
+    const int total_order = order_service_->calculate_total_cents(dto.order_id);
+    const int total_paid_before = repository_->sum_by_order(dto.order_id);
+
+    // 2. Mapeamento DTO -> Model
     models::Payment payment;
     payment.order_id = dto.order_id;
-    payment.method = dto.method;
     payment.amount_cents = dto.amount_cents;
-    payment.paid_at = std::chrono::system_clock::now();
+    payment.method = dto.method;
+    payment.paid_at = std::nullopt;
 
-    validate_payment(payment);
+    // 3. Validação (Passando os valores já consultados)
+    validate_payment(payment, total_order, total_paid_before);
 
-    /* create the payment in DB */
+    // 4. Persistência
     repository_->create(payment);
 
-    /* verify that the order has been fully paid */
-    int total_paid = repository_->sum_by_order(payment.order_id);
-    int order_total = order_service_->calculate_total_cents(payment.order_id);
+    // 5. Cálculo do novo estado
+    int total_paid_after = total_paid_before + payment.amount_cents;
+    int remaining = std::max(0, total_order - total_paid_after);
 
-    if (total_paid >= order_total)
+    auto res_dto = to_response_dto(payment);
+    res_dto.still_missing = (remaining > 0) ? std::make_optional(remaining) : std::nullopt;
+
+    // 6. Se atingiu o total, atualiza o status do pedido
+    if (total_paid_after >= total_order)
     {
-        const auto paid_at = utils::time::time_point_to_string(std::chrono::system_clock::now());
-
-        repository_->mark_as_paid(payment.id, paid_at);
         order_service_->mark_order_as_paid(payment.order_id);
     }
 
-    return to_response_dto(payment);
+    return res_dto;
 }
 
 auto PaymentServices::get_payment_by_id(int payment_id) -> models::dto::PaymentResponseDTO

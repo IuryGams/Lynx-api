@@ -3,6 +3,7 @@
 #include <chrono>
 #include <utility>
 #include <vector>
+#include <optional>
 
 namespace lynx::models
 {
@@ -21,7 +22,7 @@ struct Payment
     int order_id;
     PaymentMethod method;
     int amount_cents;
-    std::chrono::system_clock::time_point paid_at;
+    std::optional<std::chrono::system_clock::time_point> paid_at;
 };
 
 } // namespace lynx::models

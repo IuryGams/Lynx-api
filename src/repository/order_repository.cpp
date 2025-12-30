@@ -244,7 +244,6 @@ auto OrderRepository::find_all_summary(const std::optional<std::string> &status_
     const auto db = get_db();
     sqlite3_stmt *stmt = nullptr;
 
-    // Query base
     std::string query = R"SQL(
         SELECT
             o.id,
@@ -262,49 +261,41 @@ auto OrderRepository::find_all_summary(const std::optional<std::string> &status_
                 WHERE p.order_id = o.id
             ) AS total_paid_cents
         FROM orders o
+        WHERE 1=1
     )SQL";
 
-    // Montar WHERE dinamicamente
-    bool hasWhere = false;
+    std::vector<std::pair<int, int>> int_params;
+    std::vector<std::string> string_params;
+
     if (status_filter.has_value())
     {
-        query += " WHERE o.status = ? ";
-        hasWhere = true;
+        query += " AND o.status = ?";
+        string_params.push_back(*status_filter);
     }
+
     if (customer_id_filter.has_value())
     {
-        query += hasWhere ? " AND o.customer_id = ? " : " WHERE o.customer_id = ? ";
-        hasWhere = true;
+        query += " AND o.customer_id = ?";
+        int_params.emplace_back(*customer_id_filter, 0);
     }
 
-    query += " ORDER BY o.created_at DESC ";
+    query += " ORDER BY o.created_at DESC";
 
-    // Adicionar LIMIT se houver
     if (limit.has_value())
     {
-        query += " LIMIT ? ";
+        query += " LIMIT ?";
+        int_params.emplace_back(*limit, 0);
     }
 
-    // Preparar statement
     if (sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr) != SQLITE_OK)
         throw exceptions::InternalServerError(sqlite3_errmsg(db));
 
-    // Bind dos parâmetros
-    int paramIndex = 1;
-    if (status_filter.has_value())
-    {
-        sqlite3_bind_text(stmt, paramIndex++, status_filter->c_str(), -1, SQLITE_TRANSIENT);
-    }
-    if (customer_id_filter.has_value())
-    {
-        sqlite3_bind_int(stmt, paramIndex++, *customer_id_filter);
-    }
-    if (limit.has_value())
-    {
-        sqlite3_bind_int(stmt, paramIndex++, *limit);
-    }
+    int bind_index = 1;
+    for (const auto &s : string_params)
+        sqlite3_bind_text(stmt, bind_index++, s.c_str(), -1, SQLITE_TRANSIENT);
+    for (auto &p : int_params)
+        sqlite3_bind_int(stmt, bind_index++, p.first);
 
-    // Executar query
     std::vector<models::OrderSummary> orders;
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {

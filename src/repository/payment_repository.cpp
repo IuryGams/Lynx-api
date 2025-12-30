@@ -32,9 +32,9 @@ auto PaymentRepository::create(models::Payment &payment) -> void
 
     sqlite3_bind_int(stmt, 3, payment.amount_cents);
 
-    if (payment.paid_at.time_since_epoch().count() > 0)
+    if (payment.paid_at.has_value()) // verifica se existe valor
     {
-        const auto paid_at_str = utils::time::time_point_to_string(payment.paid_at);
+        const auto paid_at_str = utils::time::time_point_to_string(*payment.paid_at);
         sqlite3_bind_text(stmt, 4, paid_at_str.c_str(), -1, SQLITE_TRANSIENT);
     }
     else
@@ -203,9 +203,9 @@ auto PaymentRepository::update(const int &id, const models::Payment &payment) ->
 
     sqlite3_bind_int(stmt, 3, payment.amount_cents);
 
-    if (payment.paid_at.time_since_epoch().count() > 0)
+    if (payment.paid_at.has_value()) // verifica se existe valor
     {
-        const auto paid_at_str = utils::time::time_point_to_string(payment.paid_at);
+        const auto paid_at_str = utils::time::time_point_to_string(*payment.paid_at);
         sqlite3_bind_text(stmt, 4, paid_at_str.c_str(), -1, SQLITE_TRANSIENT);
     }
     else

@@ -37,7 +37,16 @@ auto PaymentController::create(const crow::request &req) -> crow::response
         res["order_id"] = payment_res.order_id;
         res["method"] = utils::payment_method_to_string(payment_res.method);
         res["amount_cents"] = payment_res.amount_cents;
-        res["paid_at"] = utils::time::time_point_to_string(payment_res.paid_at);
+
+        if (payment_res.paid_at.has_value())
+        {
+            res["paid_at"] = utils::time::time_point_to_string(payment_res.paid_at.value());
+        }
+
+        if (payment_res.still_missing.has_value())
+        {
+            res["still_missing"] = payment_res.still_missing.value();
+        }
 
         return crow::response((int)HttpStatus::CREATED, res);
     }
@@ -58,7 +67,11 @@ auto PaymentController::get(const int &payment_id) -> crow::response
         res["order_id"] = payment_res.order_id;
         res["method"] = utils::payment_method_to_string(payment_res.method);
         res["amount_cents"] = payment_res.amount_cents;
-        res["paid_at"] = utils::time::time_point_to_string(payment_res.paid_at);
+
+        if (payment_res.paid_at.has_value())
+        {
+            res["paid_at"] = utils::time::time_point_to_string(payment_res.paid_at.value());
+        }
 
         return crow::response((int)(HttpStatus::OK), res);
     }
