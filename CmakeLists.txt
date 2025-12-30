@@ -8,16 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Crow CONFIG REQUIRED)
 find_package(SQLite3 REQUIRED)
 
-include(FetchContent)
-
-FetchContent_Declare(
-    json
-    GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.11.2
-)
-
-FetchContent_MakeAvailable(json)
-
 
 # Variavel para armazenar todos os arquivos .cpp no Projeto
 file(GLOB_RECURSE PROJECT_SOURCES
@@ -47,5 +37,3 @@ target_link_libraries(crow_api
         Crow::Crow
         SQLite::SQLite3
 )
-
-target_link_libraries(crow_api PRIVATE nlohmann_json::nlohmann_json)
