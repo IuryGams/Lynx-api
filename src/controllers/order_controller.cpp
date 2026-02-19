@@ -24,8 +24,8 @@ auto OrderController::create(const crow::request &req) -> crow::response
     try
     {
         auto body = crow::json::load(req.body);
-        if (!body)
-            return crow::response(400, "Invalid JSON");
+         if (!body)
+            return crow::response(400, "Invalid JSON"); 
 
         models::dto::OrderCreateDTO dto;
         if (!body.has("customer_id") || !body.has("items"))
